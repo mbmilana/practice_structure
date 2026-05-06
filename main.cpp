@@ -20,6 +20,7 @@ struct Aircraft{
 bool strcopy(wchar_t (&dest)[MAX_LEN], wchar_t (&dep)[MAX_LEN]);
 void errors(int code, int str);
 bool str_to_double(double (&dest), wchar_t dep[MAX_LEN], int i);
+int* index_sort(Aircraft *aircrafts, int n);                //индексная сортировка
 
 
 int main(){
@@ -81,7 +82,7 @@ int main(){
         }
     }
 
-    //int* aircrafts_sorted = index_sort(aircrafts, cnt);
+    int* aircrafts_sorted = index_sort(aircrafts, cnt);
     return 0;
 }
 
@@ -100,6 +101,15 @@ void errors(int code, int str){                         //функция печ�
     case 1:
         wcout<<"Ошибка: не удалось открыть файл\n";
         break;
+    case 2:
+        wcout<<"Ошибка: недостаточно данных в строке "<<str+1<<'\n';
+        break;
+    case 3:
+        wcout<<"Предупреждение: в строке "<<str+1<<" больше данных, чем требуется\n";
+        break;
+    case 4:
+        wcout<<"Нет данных о летательных аппаратах\n";
+        break;
     }
 }
 
@@ -117,4 +127,22 @@ bool str_to_double(double (&dest), wchar_t dep[MAX_LEN], int i){    //преоб
     else 
         errors(6, i);
     return false;
+}
+
+int* index_sort(Aircraft *aircrafts, int n){
+    int *ind = new int[n];                              //массив номеров ЛА в исходном списке
+    for(int i=0;i<n;++i)                                //заполнение массива номерами ЛА
+        ind[i]=i;
+
+    //сортировка вставками
+    for(int i=1; i<n; ++i){
+        int now=ind[i];
+        int j=i-1;
+        while(j>=0 && aircrafts[ind[j]].echelon < aircrafts[now].echelon){
+            ind[j+1]=ind[j];
+            --j;
+        }
+        ind[j+1]=now;
+    }
+    return ind;
 }
