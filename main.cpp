@@ -43,15 +43,35 @@ aircrafts - указатели на ЛА
 n - количество ЛА*/
 int* index_sort(Aircraft *aircrafts, int n);
 
+/*ПЕЧАТЬ ДАННЫХ О ЛЕТАТЕЛЬНЫХ АППАРАТАХ
+aircrafts - указатели на ЛА
+n - количество ЛА
+sotred - массив номеров ЛА, отсортированных по эшелону (если nullptr - печать только данных о ЛА)*/
+void print_aircrafts(Aircraft* aircrafts, int n, int* sorted);
 
-void print_sorted(Aircraft* aircrafts, int* sorted, int n);
+/*ПЕЧАТЬ ОТСОРТИРОВАННЫХ ДАННЫХ О ЛЕТАТЕЛЬНЫХ АППАРАТАХ 
+aircrafts - указатели на ЛА
+n - количество ЛА
+sotred - массив номеров ЛА, отсортированных по эшелону*/
+void print_sorted(Aircraft* aircrafts, int n, int* sorted);
 
+/*ПЕЧАТЬ СЛОВА В ПОЛЕ ВЫВОДА ФИКСИРОВАННОЙ ДЛИНЫ
+word - слово, которое необходимо напечатать
+wide - ширина поля*/
 void print_fixedwide(wstring word, int wide);
 
+/*ПЕЧАТЬ ШАПКИ ТАБЛИЦЫ ДЛЯ ОТСОРТИРОВАННОГО СПИСКА ЛА*/
+void table_header_sorted();
+
+/*ПЕЧАТЬ ШАПКИ ТАБЛИЦЫ ДЛЯ НЕОТСОРТИРОВАННОГО СПИСКА ЛА*/
 void table_header();
 
+/*ПРЕОБРАЗОВАНИЕ ЦЕЛОГО СИЛА В СТРОКУ
+value - значение для преобразования*/
 wstring int_towstring(int value);
 
+/*ПРЕОБРАЗОВАНИЕ ЧИСЛА С ПЛАВАЮЩЕЙ ТОЧКОЙ В СТРОКУ
+value - значение для преобразования*/
 wstring double_towstring(double value);
 
 
@@ -105,7 +125,7 @@ int main(){
                 word[cnt_word]='\0';
                 input.get(current);
             }
-            //проверка введенного слова
+
 
             switch(k){                          //инициализация поля структуры
             case 0:
@@ -137,11 +157,11 @@ int main(){
         }
     }
 
+    print_aircrafts(aircrafts, n, nullptr);
+
     int* aircrafts_sorted = index_sort(aircrafts, cnt);     //индексная сортировка
                                                             //aircrafts_sorted - массив индесов ЛА, отсортированных по эшелону
-    
-    table_header();
-    print_sorted(aircrafts, aircrafts_sorted, n);
+    print_aircrafts(aircrafts, n, aircrafts_sorted);
 
     return 0;
 }
@@ -225,35 +245,40 @@ int* index_sort(Aircraft *aircrafts, int n){
     return ind;
 }
 
-void table_header(){                                    //функция печати шапки таблицы
+//ПЕЧАТЬ ШАПКИ ТАБЛИЦЫ ДЛЯ ОТСОРТИРОВАННОГО СПИСКА ЛА
+void table_header_sorted(){
+
     for(int i=0;i<70;++i){
         wcout<<L'=';
     }
+
     wcout<<L'\n'<<L'|'
          <<L"N"<<L"   |";
 
+    wcout<<L"ID";
+    for(int i=0;i<3;++i)
+        wcout<<" ";
+
+    wcout<<L'|';
     wcout<<"Марка ЛА";
     for(int i=0;i<8;++i){
-        wcout<<L' ';                                    //в сумме 16
+        wcout<<L' ';
     }
+
     wcout<<L'|'<<"Бортовой номер";
     for(int i=0;i<4;++i){
         wcout<<L' ';
     }
+
     wcout<<L'|'<<"Высота";
     for(int i=0;i<4;++i){
         wcout<<L' '; 
-    }                                                  //в сумме 10
+    }
+
     wcout<<L'|'<<"Эшелон";
     for(int i=0;i<4;++i){
         wcout<<L' ';
     }
-
-    wcout<<L'|';
-    //печать номера ЛА в исходном массиве
-    wcout<<L"ID";
-    for(int i=0;i<3;++i)
-        wcout<<" ";
     wcout<<L'|'<<L'\n';
 
     for(int i=0;i<70;++i)
@@ -261,44 +286,145 @@ void table_header(){                                    //функция печати шапки т
     wcout<<'\n';
 }
 
-void print_sorted(Aircraft* aircrafts, int* sorted, int n){
-    if(n==0){
+//ПЕЧАТЬ ШАПКИ ТАБЛИЦЫ ДЛЯ НЕОТСОРТИРОВАННОГО СПИСКА ЛА
+void table_header(){
+
+    for(int i=0;i<65;++i){
+        wcout<<L'=';
+    }
+
+    wcout<<L'\n'<<L'|';
+
+    wcout<<L"ID";
+    for(int i=0;i<3;++i)
+        wcout<<" ";
+
+    wcout<<L'|';
+    wcout<<"Марка ЛА";
+    for(int i=0;i<8;++i){
+        wcout<<L' ';
+    }
+
+    wcout<<L'|'<<"Бортовой номер";
+    for(int i=0;i<4;++i){
+        wcout<<L' ';
+    }
+
+    wcout<<L'|'<<"Высота";
+    for(int i=0;i<4;++i){
+        wcout<<L' '; 
+    }
+
+    wcout<<L'|'<<"Эшелон";
+    for(int i=0;i<4;++i){
+        wcout<<L' ';
+    }
+    wcout<<L'|'<<L'\n';
+
+    for(int i=0;i<65;++i)
+        wcout<<L'=';
+    wcout<<'\n';
+}
+
+//ПЕЧАТЬ СЧИТАННЫХ ДАННЫХ О ЛЕТАТЕЛЬНЫХ АППАРАТАХ ИЗ ФАЙЛА
+void print_aircrafts(Aircraft* aircrafts, int n, int* sorted){
+    if(n==0){                               //если нет считанных данных о ЛА - вывод сообщения
         errors(4,0);
         return;
     }
+
+    if(sorted!=nullptr){
+        print_sorted(aircrafts, n, sorted);
+        return;
+    }
+
+    wcout<<"Данные о летательных аппаратах: \n";
+    table_header();
+
+    for(int i=0;i<n;++i){
+
+                                                //данные об одном ЛА
+        wstring model=aircrafts[i].model,     //модель
+                number=aircrafts[i].number,   //бортовой номер
+                height,                         //высота
+                echelon,                        //эшелон
+        
+        //преобразование чисел в строки для вычисления длины и печати
+        ind = int_towstring(i+1);                               //номер ЛА в исходном массиве
+        height = double_towstring(aircrafts[i].height);          //высоту берем с точностью до 1 знака после запятой
+        echelon = int_towstring(aircrafts[i].echelon);
+
+        //печать столбца номера ЛА в исходной таблице
+        print_fixedwide(ind, 5);
+
+        //печать модели ЛА
+        print_fixedwide(model, 16);
+
+        //печать бортового номера
+        print_fixedwide(number, 18);
+
+        //печать высоты ЛА
+        print_fixedwide(height, 10);
+
+        //печать номера эшелона
+        print_fixedwide(echelon, 10);
+
+        wcout<<L'|'<<L'\n';
+
+        //печать разделителя строк
+        for(int j=0;j<65;++j){
+            wcout<<L'-';
+        }
+        wcout<<L'\n';
+    }
+
+    wcout<<"\n\n";
+
+}
+
+//ПЕЧАТЬ ДАННЫХ О ЛА, ОТСОРТИРОВАННЫХ ПО ЭШЕЛОНУ
+void print_sorted(Aircraft* aircrafts, int n, int* sorted){
+    wcout<<"Данные о летательных аппаратах, отсортированные по эшелону: \n";
+
     int ind;
     
-    table_header();                         //печать шапки таблицы
+    table_header_sorted();                         //печать шапки таблицы
 
-    //цикл по всем ЛА, печатающий информацию о ЛА
+                                            //цикл по всем ЛА, печатающий информацию о ЛА
     for(int i=0;i<n;++i){
         ind=sorted[i];                      //номер ЛА в исходном массиве
 
-        wstring model=aircrafts[ind].model,
-                number=aircrafts[ind].number,
-                height, 
-                echelon, 
-                ind1, 
-                ind2;
+                                                //данные об одном ЛА
+        wstring model=aircrafts[ind].model,     //модель
+                number=aircrafts[ind].number,   //бортовой номер
+                height,                         //высота
+                echelon,                        //эшелон
+                ind1,                           //индекс
+                ind2;                           //номер в исходном массиве
         
         //преобразование чисел в строки для вычисления длины и печати
-        ind1 = int_towstring(i+1);                                        //номер ЛА в отсортированном массиве
-        ind2 = int_towstring(ind+1);                                      //номер ЛА в исходном массиве
+        ind1 = int_towstring(i+1);                                 //номер ЛА в отсортированном массиве
+        ind2 = int_towstring(ind+1);                               //номер ЛА в исходном массиве
         height = double_towstring(aircrafts[ind].height);          //высоту берем с точностью до 1 знака после запятой
         echelon = int_towstring(aircrafts[ind].echelon);
 
         //печать столбца номера ЛА в отсортированном массиве
         print_fixedwide(ind1, 4);
-        //печать модели ЛА
-        print_fixedwide(model, 16);
-        //печать бортового номера
-        print_fixedwide(number, 18);
-        //печать высоты ЛА
-        print_fixedwide(height, 10);
-        //печать номера эшелона
-        print_fixedwide(echelon, 10);
+
         //печать столбца номера ЛА в исходной таблице
         print_fixedwide(ind2, 5);
+
+        //печать модели ЛА
+        print_fixedwide(model, 16);
+
+        //печать бортового номера
+        print_fixedwide(number, 18);
+
+        //печать высоты ЛА
+        print_fixedwide(height, 10);
+
+        //печать номера эшелона
+        print_fixedwide(echelon, 10);
 
         wcout<<L'|'<<L'\n';
 
@@ -310,15 +436,18 @@ void print_sorted(Aircraft* aircrafts, int* sorted, int n){
     }
 }
 
+//ПЕЧАТЬ СЛОВА В ПОЛЕ ВЫВОДА ФИКСИРОВАННОЙ ДЛИНЫ
 void print_fixedwide(wstring word, int wide){
     int l=word.size();                      //длина слова
     wcout<<L'|';
-    wcout<<word;
+    wcout<<word;                            //печать слова
+
     for(int i=0;i<wide-l;++i){
-        wcout<<L' ';
+        wcout<<L' ';                        //печать пробелов после слова
     }
 }
 
+//ПРЕОБРАЗОВАНИЕ ЦЕЛОГО ЧИСЛА В СТРОКУ
 wstring int_towstring(int value){
     wstring res=L"";                           //создание пустой строки
     wchar_t word[MAX_LEN];                     //массив символов для преобразование из double в char[]
@@ -329,6 +458,7 @@ wstring int_towstring(int value){
     return res;
 }
 
+//ПРЕОБРАЗОВАНИЕ ЧИСЛА С ПЛАВАЮЩЕЙ ТОЧКОЙ В СТРОКУ
 wstring double_towstring(double value){
     wstring res=L"";                           //создание пустой строки
     wchar_t word[MAX_LEN];                     //массив символов для преобразование из double в char[]
@@ -338,3 +468,5 @@ wstring double_towstring(double value){
     }
     return res;
 }
+
+//добавить входной контроль бортового номера
