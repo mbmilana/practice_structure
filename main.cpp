@@ -7,6 +7,7 @@
 using namespace std;
 
 const int MAX_LEN=100;
+const char FILENAME[]="input3.txt";
 
 //СТРУКТУРА ЛЕТАТЕЛЬНОГО АППАРАТА
 struct Aircraft{
@@ -79,7 +80,7 @@ wstring double_towstring(double value);
 //ОСНОВНАЯ ПРОГРАММА
 int main(){
     
-    wifstream input("input1.txt");           //входной файл
+    wifstream input(FILENAME);           //входной файл
 
     if(!input.is_open()){                   //попытка открытия файла
         errors(1, 0);                       //вывод сообщения об ошибке, если файл не открылся
@@ -108,17 +109,25 @@ int main(){
             //проверка введенного слова
             word[0]='\0';                           //обнуление word
             cnt_word=0;                             //и длины word
+            current='\0';                           //и текущего символа
 
-            //игнорирование пробелов в начале строки
-            do {
-                input.get(current);                 //считывание символа
-                if(input.eof())                     //проверка конца файла
+            bool line_er=false;                     //ошибка чтения
+            do{
+                if(!input.get(current)){            //конец файла раньше, чем считаны необходимые данные
+                    if(k < 2){
+                        errors(2, i);
+                        line_er = true;
+                    }
                     break;
-            } while(current == ' ' && k==0);
+                }
 
-            if(current=='\n' && word[0]=='\0'){
+            }while(current == L' ');
+            if(line_er)
+                break;
+
+            if((current=='\n' || current=='\r') && word[0]=='\0'){
                 errors(2,i);                        //недостаточно данных(пустая строка)
-                continue;
+                break;
             }
             while(current!=' ' && current!='\n' && !input.eof()){
                 word[cnt_word++]=current;
@@ -138,16 +147,24 @@ int main(){
                 f3 = str_to_double(temp_aircraft.height, word, i);
                 break;
             }
-            if(k==2 && current!='\n')
-                while(current!='\n' && !input.eof())
-                    input.get();
-            //wcout<<word<<'\n';                     //проверка: печать считанного слова
-        }
 
-                                                     //если в строке больше слов, чем 3
-       if ((current != '\n' && i!=n-1) || (!input.eof() && i == n - 1)) {                          //в строке больше слов
-            errors(3, i);                            //выводим предупреждение, но проверяем первые три слова
-            continue;
+            if(k == 2){
+                while(current == L' ')
+                    input.get(current);
+                if(current != L'\n' && !input.eof()){
+                    errors(3, i);
+
+                    // пропуск остатка строки
+                    while(current != L'\n' && input.get(current));
+                }
+            }
+            
+            // if(k==2 && current!='\n')
+            //     while(current!='\n' && !input.eof())
+            //         input.get();
+            //wcout<<word<<'\n';                     //проверка: печать считанного слова
+
+                                                                 //если в строке больше слов, чем 3
         }
 
                                                     //если все поля заполнены правильно
@@ -157,11 +174,11 @@ int main(){
         }
     }
 
-    print_aircrafts(aircrafts, n, nullptr);
+    print_aircrafts(aircrafts, cnt, nullptr);
 
     int* aircrafts_sorted = index_sort(aircrafts, cnt);     //индексная сортировка
                                                             //aircrafts_sorted - массив индесов ЛА, отсортированных по эшелону
-    print_aircrafts(aircrafts, n, aircrafts_sorted);
+    print_aircrafts(aircrafts, cnt, aircrafts_sorted);
 
     return 0;
 }
@@ -194,6 +211,12 @@ void errors(int code, int str){
         break;
     case 4:
         wcout<<"Нет данных о летательных аппаратах\n";
+        break;
+    case 5:
+        wcout<<"Ошибка: в строке "<<str+1<<" значение высоты не находится в пределах от 0 до 15 км\n";
+        break;
+    case 6:
+        wcout<<"Ошибка: в строке "<<str+1<<" высота не является числовым значением\n";
         break;
     }
 }
