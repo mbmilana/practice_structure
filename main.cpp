@@ -7,7 +7,7 @@
 using namespace std;
 
 const int MAX_LEN=100;
-const char FILENAME[]="input3.txt";
+const char FILENAME[]="input5.txt";
 
 //—“–” “”–ј Ћ≈“ј“≈Ћ№Ќќ√ќ јѕѕј–ј“ј
 struct Aircraft{
@@ -109,19 +109,17 @@ int main(){
             //проверка введенного слова
             word[0]='\0';                           //обнуление word
             cnt_word=0;                             //и длины word
-            current='\0';                           //и текущего символа
+            //current='\0';                           //и текущего символа
 
             bool line_er=false;                     //ошибка чтени€
             do{
                 if(!input.get(current)){            //конец файла раньше, чем считаны необходимые данные
-                    if(k < 2){
-                        errors(2, i);
-                        line_er = true;
-                    }
+                    errors(2, i);
+                    line_er = true;
                     break;
                 }
 
-            }while(current == L' ');
+            }while(current == L' ' || current=='\r');
             if(line_er)
                 break;
 
@@ -148,6 +146,12 @@ int main(){
                 break;
             }
 
+            if(current=='\n' && k<2){           //слово прочитано и после него перенос строки (нет 2го или 3го слова)
+                f1=false;                       //любой флаг - ошибка,чтобы не добавл€лась запись о Ћј
+                errors(2, i);
+                break;
+            }
+
             if(k == 2){
                 while(current == L' ')
                     input.get(current);
@@ -157,14 +161,7 @@ int main(){
                     // пропуск остатка строки
                     while(current != L'\n' && input.get(current));
                 }
-            }
-            
-            // if(k==2 && current!='\n')
-            //     while(current!='\n' && !input.eof())
-            //         input.get();
-            //wcout<<word<<'\n';                     //проверка: печать считанного слова
-
-                                                                 //если в строке больше слов, чем 3
+            }                                   //если в строке больше слов, чем 3
         }
 
                                                     //если все пол€ заполнены правильно
